@@ -64,14 +64,13 @@ jobs:
       - name: Send email (links only)
         uses: dawidd6/action-send-mail@v3
         with:
-          # === Config Gmail via campi separati ===
-          server_address: smtp.gmail.com
-          server_port: 587          # 587 = STARTTLS
-          secure: false             # STARTTLS -> false (TLS viene negoziato)
-          username: ${{ secrets.SMTP_USERNAME }}   # es: nome@gmail.com
-          password: ${{ secrets.SMTP_PASSWORD }}   # App Password di Gmail
-          from: ${{ secrets.MAIL_FROM }}           # es: "HurricaneBot <nome@gmail.com>"
-          to: ${{ secrets.MAIL_TO }}               # es: "tu@dominio.it, collega@dominio.it"
+          # Secrets richieste:
+          #  - SMTP_URL  -> es: smtps://UTENTE:APP_PASSWORD@smtp.gmail.com:465
+          #  - MAIL_FROM -> es: "HurricaneBot <nome@gmail.com>"
+          #  - MAIL_TO   -> es: "tu@dominio.it, collega@dominio.it"
+          connection_url: ${{ secrets.SMTP_URL }}
+          from: ${{ secrets.MAIL_FROM }}
+          to: ${{ secrets.MAIL_TO }}
           subject: "Daily HurricaneZone – run ${{ github.run_id }} ({{date}})"
           html_body: |
             <p>Ciao,</p>
