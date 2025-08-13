@@ -1,0 +1,48 @@
+name: Daily Screenshot
+
+on:
+  schedule:
+    # Esegui ogni giorno alle 06:00 UTC.
+    # Nota: in estate 06:00 UTC = 08:00 a Roma (CEST), in inverno = 07:00 (CET).
+    - cron: "0 6 * * *"
+  workflow_dispatch: {}  # permette l'avvio manuale
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          python -m playwright install --with-deps chromium
+
+      - name: Run script
+        run: python script.py
+
+      - name: Upload artifacts (PNG + PDF)
+        uses: actions/upload-artifact@v4
+        with:
+          name: hurricanezone-${{ github.run_id }}
+          path: |
+            output/**/hurricanezone_full.png
+            output/**/hurricanezone_scroll.pdf
+          if-no-files-found: error
+          retention-days: 30
+
+      # ——— Opzionale: committa i file generati nel repo (branch corrente) ———
+      # - name: Commit generated files
+      #   uses: EndBug/add-and-commit@v9
+      #   with:
+      #     add: "output"
+      #     message: "chore: daily capture"
+      #     default_author: github_actions
