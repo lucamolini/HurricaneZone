@@ -9,7 +9,7 @@ jobs:
   run:
     runs-on: ubuntu-latest
     permissions:
-      contents: write      # serve per committare i file generati
+      contents: write      # per committare i file generati
 
     steps:
       - name: Checkout
@@ -61,14 +61,14 @@ jobs:
           echo "RAW_PNG_URL=$BASE/raw/$BRANCH/$OUTDIR/hurricanezone_full.png" >> "$GITHUB_OUTPUT"
           echo "RAW_PDF_URL=$BASE/raw/$BRANCH/$OUTDIR/hurricanezone_scroll.pdf" >> "$GITHUB_OUTPUT"
 
-      - name: Send email (links only)
+      - name: Send email (links only, Gmail SSL 465)
         uses: dawidd6/action-send-mail@v3
         with:
-          # Secrets richieste:
-          #  - SMTP_URL  -> es: smtps://UTENTE:APP_PASSWORD@smtp.gmail.com:465
-          #  - MAIL_FROM -> es: "HurricaneBot <nome@gmail.com>"
-          #  - MAIL_TO   -> es: "tu@dominio.it, collega@dominio.it"
-          connection_url: ${{ secrets.SMTP_URL }}
+          server_address: smtp.gmail.com
+          server_port: 465        # SSL diretto
+          secure: true            # SSL/TLS subito (no STARTTLS)
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
           from: ${{ secrets.MAIL_FROM }}
           to: ${{ secrets.MAIL_TO }}
           subject: "Daily HurricaneZone – run ${{ github.run_id }} ({{date}})"
@@ -89,6 +89,6 @@ jobs:
               </li>
             </ul>
             <p>— GitHub Actions</p>
-          # Sblocca per debug SMTP se necessario:
+          # Sblocca per debug SMTP in caso di problemi:
           # nodemailerdebug: true
           # nodemailerlog: true
