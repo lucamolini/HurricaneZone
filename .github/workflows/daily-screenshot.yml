@@ -62,33 +62,29 @@ jobs:
           echo "RAW_PDF_URL=$BASE/raw/$BRANCH/$OUTDIR/hurricanezone_scroll.pdf" >> "$GITHUB_OUTPUT"
 
       - name: Send email (links only)
-        uses: dawidd6/action-send-mail@v3
-        with:
-          # Usa una URL di connessione SMTP per evitare errori di porta/SSL:
-          # Esempi:
-          #  - Gmail SSL:     smtps://USER:APP_PASSWORD@smtp.gmail.com:465
-          #  - Office365 TLS: smtp://USER:PASSWORD@smtp.office365.com:587
-          connection_url: ${{ secrets.SMTP_URL }}
-          from: ${{ secrets.MAIL_FROM }}
-          to: ${{ secrets.MAIL_TO }}
-          subject: "Daily HurricaneZone – run ${{ github.run_id }} ({{date}})"
-          html_body: |
-            <p>Ciao,</p>
-            <p>La cattura giornaliera di <b>https://www.hurricanezone.org/</b> è pronta.</p>
-            <ul>
-              <li>Pagina della run (Artifacts):<br>
-                  <a href="${{ steps.links.outputs.RUN_URL }}">${{ steps.links.outputs.RUN_URL }}</a>
-              </li>
-              <li>PNG nel repo:<br>
-                  <a href="${{ steps.links.outputs.WEB_PNG_URL }}">web</a> |
-                  <a href="${{ steps.links.outputs.RAW_PNG_URL }}">download diretto</a>
-              </li>
-              <li>PDF nel repo:<br>
-                  <a href="${{ steps.links.outputs.WEB_PDF_URL }}">web</a> |
-                  <a href="${{ steps.links.outputs.RAW_PDF_URL }}">download diretto</a>
-              </li>
-            </ul>
-            <p>— GitHub Actions</p>
+			uses: dawidd6/action-send-mail@v3
+			  with:
+			    connection_url: ${{ secrets.SMTP_URL }}
+			    from: ${{ secrets.MAIL_FROM }}
+			    to: ${{ secrets.MAIL_TO }}
+			    subject: "Daily HurricaneZone – run ${{ github.run_id }} ({{date}})"
+			    html_body: |
+			      <p>Ciao,</p>
+			      <p>La cattura giornaliera di <b>https://www.hurricanezone.org/</b> è pronta.</p>
+			      <ul>
+			        <li>Pagina della run (Artifacts):<br>
+			            <a href="${{ steps.links.outputs.RUN_URL }}">${{ steps.links.outputs.RUN_URL }}</a>
+			        </li>
+			        <li>PNG nel repo:<br>
+			            <a href="${{ steps.links.outputs.WEB_PNG_URL }}">web</a> |
+			            <a href="${{ steps.links.outputs.RAW_PNG_URL }}">download diretto</a>
+			        </li>
+			        <li>PDF nel repo:<br>
+			            <a href="${{ steps.links.outputs.WEB_PDF_URL }}">web</a> |
+			            <a href="${{ steps.links.outputs.RAW_PDF_URL }}">download diretto</a>
+			        </li>
+			      </ul>
+			      <p>— GitHub Actions</p>
           # utile per debug SMTP in caso di problemi:
           nodemailerdebug: true
           nodemailerlog: true
