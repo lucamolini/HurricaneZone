@@ -2,10 +2,8 @@ name: Daily Screenshot
 
 on:
   schedule:
-    # Esegui ogni giorno alle 06:00 UTC.
-    # Nota: in estate 06:00 UTC = 08:00 a Roma (CEST), in inverno = 07:00 (CET).
     - cron: "0 6 * * *"
-  workflow_dispatch: {}  # permette l'avvio manuale
+  workflow_dispatch: {}
 
 jobs:
   run:
@@ -39,10 +37,38 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
-      # ——— Opzionale: committa i file generati nel repo (branch corrente) ———
-      # - name: Commit generated files
-      #   uses: EndBug/add-and-commit@v9
-      #   with:
-      #     add: "output"
-      #     message: "chore: daily capture"
-      #     default_author: github_actions
+      # Opzionale: comprimi tutto in un singolo file per email (utile se >2 allegati)
+      - name: Zip outputs (optional)
+        run: |
+          mkdir -p dist
+          tar -czf dist/hurricanezone_${{ github.run_id }}.tar.gz -C output .
+
+      - name: Send email with attachments
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.SMTP_SERVER }}
+          server_port: ${{ secrets.SMTP_PORT }}
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          # Mittente e destinatari
+          from: ${{ secrets.MAIL_FROM }}
+          to: ${{ secrets.MAIL_TO }}
+          subject: "Daily HurricaneZone – run ${{ github.run_id }} ({{date}})"
+          # Corpo (HTML consentito)
+          content_type: text/html
+          body: |
+            <p>Ciao,</p>
+            <p>in allegato la cattura giornaliera di <b>https://www.hurricanezone.org/</b>.</p>
+            <p>Puoi anche scaricare gli artifact qui:<br>
+            <a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}">
+              Run #${{ github.run_id }}
+            </a></p>
+            <p>— GitHub Actions</p>
+          # Allegati: scegli UNA delle due opzioni qui sotto
+          # 1) allega direttamente PNG e PDF (se sono piccoli)
+          attachments: |
+            output/**/hurricanezone_full.png
+            output/**/hurricanezone_scroll.pdf
+          # 2) OPPURE allega l'archivio compresso creato sopra (commenta le 2 righe di attachments e sblocca questa)
+          # attachments: |
+          #   dist/hurricanezone_${{ github.run_id }}.tar.gz
