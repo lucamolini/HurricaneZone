@@ -2,14 +2,14 @@ name: Daily Screenshot
 
 on:
   schedule:
-    - cron: "0 6 * * *"   # ogni giorno alle 06:00 UTC (07:00/08:00 a Roma a seconda dell'ora legale)
+    - cron: "0 6 * * *"   # ogni giorno alle 06:00 UTC
   workflow_dispatch: {}
 
 jobs:
   run:
     runs-on: ubuntu-latest
     permissions:
-      contents: write      # necessario per committare i file generati
+      contents: write      # serve per committare i file generati
 
     steps:
       - name: Checkout
@@ -62,29 +62,22 @@ jobs:
           echo "RAW_PDF_URL=$BASE/raw/$BRANCH/$OUTDIR/hurricanezone_scroll.pdf" >> "$GITHUB_OUTPUT"
 
       - name: Send email (links only)
-			uses: dawidd6/action-send-mail@v3
-			  with:
-			    connection_url: ${{ secrets.SMTP_URL }}
-			    from: ${{ secrets.MAIL_FROM }}
-			    to: ${{ secrets.MAIL_TO }}
-			    subject: "Daily HurricaneZone – run ${{ github.run_id }} ({{date}})"
-			    html_body: |
-			      <p>Ciao,</p>
-			      <p>La cattura giornaliera di <b>https://www.hurricanezone.org/</b> è pronta.</p>
-			      <ul>
-			        <li>Pagina della run (Artifacts):<br>
-			            <a href="${{ steps.links.outputs.RUN_URL }}">${{ steps.links.outputs.RUN_URL }}</a>
-			        </li>
-			        <li>PNG nel repo:<br>
-			            <a href="${{ steps.links.outputs.WEB_PNG_URL }}">web</a> |
-			            <a href="${{ steps.links.outputs.RAW_PNG_URL }}">download diretto</a>
-			        </li>
-			        <li>PDF nel repo:<br>
-			            <a href="${{ steps.links.outputs.WEB_PDF_URL }}">web</a> |
-			            <a href="${{ steps.links.outputs.RAW_PDF_URL }}">download diretto</a>
-			        </li>
-			      </ul>
-			      <p>— GitHub Actions</p>
-          # utile per debug SMTP in caso di problemi:
-          nodemailerdebug: true
-          nodemailerlog: true
+        uses: dawidd6/action-send-mail@v3
+        with:
+          # Secrets richieste:
+          #  - SMTP_URL  -> es: smtps://UTENTE:APP_PASSWORD@smtp.gmail.com:465
+          #  - MAIL_FROM -> es: "HurricaneBot <nome@gmail.com>"
+          #  - MAIL_TO   -> es: "tu@dominio.it, collega@dominio.it"
+          connection_url: ${{ secrets.SMTP_URL }}
+          from: ${{ secrets.MAIL_FROM }}
+          to: ${{ secrets.MAIL_TO }}
+          subject: "Daily HurricaneZone – run ${{ github.run_id }} ({{date}})"
+          html_body: |
+            <p>Ciao,</p>
+            <p>La cattura giornaliera di <b>https://www.hurricanezone.org/</b> è pronta.</p>
+            <ul>
+              <li>Pagina della run (Artifacts):<br>
+                  <a href="${{ steps.links.outputs.RUN_URL }}">${{ steps.links.outputs.RUN_URL }}</a>
+              </li>
+              <li>PNG nel repo:<br>
+                  <a href="
