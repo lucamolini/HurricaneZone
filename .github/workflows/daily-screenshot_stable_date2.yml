@@ -74,7 +74,7 @@ jobs:
           password: ${{ secrets.SMTP_PASSWORD }}
           from: ${{ secrets.MAIL_FROM }}
           to: ${{ secrets.MAIL_TO }}
-            subject: "Daily HurricaneZone – ${{ steps.set_date.outputs.date }}"
+          subject: "Daily HurricaneZone – ${{ steps.set_date.outputs.date }}"
           html_body: |
             <p>Ciao,</p>
             <p>La cattura giornaliera di <b>https://www.hurricanezone.org/</b> è pronta.</p>
