@@ -1,4 +1,4 @@
-name: Daily Screenshot
+name: Daily Screenshot STABLE+DATE
 
 on:
   schedule:
