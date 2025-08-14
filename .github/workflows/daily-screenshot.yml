@@ -29,13 +29,11 @@ jobs:
       - name: Run script
         run: python script.py
 
-      - name: Upload artifacts (PNG + PDF)
+      - name: Upload artifact (PDF)
         uses: actions/upload-artifact@v4
         with:
           name: hurricanezone-${{ github.run_id }}
-          path: |
-            output/**/hurricanezone_full.png
-            output/**/hurricanezone_scroll.pdf
+          path: output/**/hurricanezone_scroll.pdf
           if-no-files-found: error
           retention-days: 30
 
@@ -56,9 +54,7 @@ jobs:
           BRANCH="${{ github.ref_name }}"
           echo "OUTDIR=$OUTDIR" >> "$GITHUB_OUTPUT"
           echo "RUN_URL=$BASE/actions/runs/${{ github.run_id }}" >> "$GITHUB_OUTPUT"
-          echo "WEB_PNG_URL=$BASE/blob/$BRANCH/$OUTDIR/hurricanezone_full.png" >> "$GITHUB_OUTPUT"
           echo "WEB_PDF_URL=$BASE/blob/$BRANCH/$OUTDIR/hurricanezone_scroll.pdf" >> "$GITHUB_OUTPUT"
-          echo "RAW_PNG_URL=$BASE/raw/$BRANCH/$OUTDIR/hurricanezone_full.png" >> "$GITHUB_OUTPUT"
           echo "RAW_PDF_URL=$BASE/raw/$BRANCH/$OUTDIR/hurricanezone_scroll.pdf" >> "$GITHUB_OUTPUT"
 
       - name: Send email (links only, Gmail SSL 465)
