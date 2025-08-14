@@ -3,7 +3,7 @@ name: Daily Screenshot
 on:
   schedule:
     - cron: "0 6 * * *"
-  workflow_dispatch:
+  workflow_dispatch: {}
 
 jobs:
   run:
