@@ -13,7 +13,23 @@ jobs:
 
     steps:
       - name: Checkout
+      id: run_script
         uses: actions/checkout@v4
+
+      - name: Send email
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.SMTP_SERVER }}
+          server_port: ${{ secrets.SMTP_PORT }}
+          username: ${{ secrets.SMTP_USER }}
+          password: ${{ secrets.SMTP_PASS }}
+          secure: true
+          to: ${{ secrets.RECIPIENTS }}
+          from: ${{ secrets.SMTP_FROM }}
+          subject: ${{ steps.run_script.outputs.subject }}
+          body: "Allegato il PDF giornaliero."
+          attachments: |
+            output/**/hurricanezone_scroll.pdf
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -27,7 +43,7 @@ jobs:
           python -m playwright install --with-deps chromium
 
       - name: Run script
-        run: python script.py
+        run: python script_subject.py
 
       - name: Upload artifact (PDF)
         uses: actions/upload-artifact@v4
