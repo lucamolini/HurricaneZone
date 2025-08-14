@@ -2,8 +2,8 @@ name: Daily Screenshot
 
 on:
   schedule:
-    - cron: "0 6 * * *"   # ogni giorno alle 06:00 UTC
-  workflow_dispatch: {}
+    - cron: "0 6 * * *"
+  workflow_dispatch:
 
 jobs:
   run:
