@@ -1,0 +1,94 @@
+name: Daily Screenshot
+
+on:
+  schedule:
+    - cron: "0 6 * * *"   # ogni giorno alle 06:00 UTC
+  workflow_dispatch: {}
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write      # per committare i file generati
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          python -m playwright install --with-deps chromium
+
+      - name: Run script
+        run: python script.py
+
+      - name: Upload artifacts (PNG + PDF)
+        uses: actions/upload-artifact@v4
+        with:
+          name: hurricanezone-${{ github.run_id }}
+          path: |
+            output/**/hurricanezone_full.png
+            output/**/hurricanezone_scroll.pdf
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Commit generated files
+        uses: EndBug/add-and-commit@v9
+        with:
+          add: "output"
+          message: "chore: daily capture ${{ github.run_id }}"
+          default_author: github_actions
+
+      - name: Compute download links
+        id: links
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUTDIR=$(ls -d output/* | sort | tail -n1)
+          BASE="${{ github.server_url }}/${{ github.repository }}"
+          BRANCH="${{ github.ref_name }}"
+          echo "OUTDIR=$OUTDIR" >> "$GITHUB_OUTPUT"
+          echo "RUN_URL=$BASE/actions/runs/${{ github.run_id }}" >> "$GITHUB_OUTPUT"
+          echo "WEB_PNG_URL=$BASE/blob/$BRANCH/$OUTDIR/hurricanezone_full.png" >> "$GITHUB_OUTPUT"
+          echo "WEB_PDF_URL=$BASE/blob/$BRANCH/$OUTDIR/hurricanezone_scroll.pdf" >> "$GITHUB_OUTPUT"
+          echo "RAW_PNG_URL=$BASE/raw/$BRANCH/$OUTDIR/hurricanezone_full.png" >> "$GITHUB_OUTPUT"
+          echo "RAW_PDF_URL=$BASE/raw/$BRANCH/$OUTDIR/hurricanezone_scroll.pdf" >> "$GITHUB_OUTPUT"
+
+      - name: Send email (links only, Gmail SSL 465)
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465        # SSL diretto
+          secure: true            # SSL/TLS subito (no STARTTLS)
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          from: ${{ secrets.MAIL_FROM }}
+          to: ${{ secrets.MAIL_TO }}
+          subject: "Daily HurricaneZone – run ${{ github.run_id }} ({{date}})"
+          html_body: |
+            <p>Ciao,</p>
+            <p>La cattura giornaliera di <b>https://www.hurricanezone.org/</b> è pronta.</p>
+            <ul>
+              <li>Pagina della run (Artifacts):<br>
+                  <a href="${{ steps.links.outputs.RUN_URL }}">${{ steps.links.outputs.RUN_URL }}</a>
+              </li>
+              <li>PNG nel repo:<br>
+                  <a href="${{ steps.links.outputs.WEB_PNG_URL }}">web</a> |
+                  <a href="${{ steps.links.outputs.RAW_PNG_URL }}">download diretto</a>
+              </li>
+              <li>PDF nel repo:<br>
+                  <a href="${{ steps.links.outputs.WEB_PDF_URL }}">web</a> |
+                  <a href="${{ steps.links.outputs.RAW_PDF_URL }}">download diretto</a>
+              </li>
+            </ul>
+            <p>— GitHub Actions</p>
+          # Sblocca per debug SMTP in caso di problemi:
+          # nodemailerdebug: true
+          # nodemailerlog: true
